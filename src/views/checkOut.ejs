@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check out</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://www.paypalobjects.com/webstatic/en_US/developer/docs/css/cardfields.css"
+    />
+    <link rel="stylesheet" href="/css/app.css">
+    <script
+        src="https://www.paypal.com/sdk/js?components=buttons&disable-funding=card&client-id=<%= clientId %>"
+    ></script>
+    <script data-client-token="<%= clientToken %>"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <div class="wrap-paypal-payment">
+        <div id="paypal-button-container" class="paypal-button-container"></div>
+    </div>
+    <div class="wrap-stripe-payment">
+        <form id="payment-form" class="form-stripe-payment">
+            <div id="card-element">
+                <!--Stripe.js injects the Card Element-->
+            </div>
+            <button id="submit" class="button-stripe">
+              <div class="spinner hidden" id="spinner"></div>
+              <span id="button-text">Pay now</span>
+            </button>
+            <p id="card-error" role="alert">
+                <!-- show error payment -->
+            </p>
+            <p class="result-message hidden">
+              Payment succeeded, see the result in your
+              <!-- show success payment -->
+              <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
+            </p>
+        </form>
+    </div>
+</body>
+    <script>
+        paypal.Buttons({
+            createOrder() {
+                return fetch("/v1/api/create-paypal-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    cart: [
+                    {
+                        name: 'learn html',
+                        quatity: 2,
+                        price: 20000
+                    },
+                    {
+                        name: 'learn css',
+                        quatity: 1,
+                        price: 10000
+                    },
+                    ],
+                }),
+                })
+                .then((response) => response.json())
+                .then((orderData) => {
+                    console.log(orderData.order.id)
+                    return orderData.order.id
+                });
+            },
+            onApprove(data) {
+                return fetch("/v1/api/capture-paypal-order", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID
+                    })
+                })
+                .then((response) => response.json())
+                .then((orderData) => {
+                    console.log("checkOut success",orderData)
+                });
+            },
+            onError(err){
+                console.log('error from the onError callback', err);
+            },
+            onCancel: function (data) {
+                console.log('cancal from the onCancel callback', data);
+            }
+        }).render('#paypal-button-container');
+    </script>
+    <script>
+        const stripe = Stripe("<%= clientIDStripe %>");
+        const purchase = {
+            items: [{ id: "xl-tshirt" }]
+        };
+        document.querySelector("button").disabled = true;
+        fetch("/v1/api/create-payment-intent-stripe", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(purchase)
+        })
+        .then(function(result) {
+            return result.json();
+        })
+        .then(function(data) {
+            var elements = stripe.elements();
+            var style = {
+                base: {
+                    color: "#32325d",
+                    fontFamily: 'Arial, sans-serif',
+                    fontSmoothing: "antialiased",
+                    fontSize: "16px",
+                    "::placeholder": {
+                    color: "#32325d"
+                    }
+                },
+                invalid: {
+                    fontFamily: 'Arial, sans-serif',
+                    color: "#fa755a",
+                    iconColor: "#fa755a"
+                }
+            };
+            var card = elements.create("card", { style: style });
+                card.mount("#card-element");
+                card.on("change", function (event) {
+                document.querySelector("button").disabled = event.empty;
+                document.querySelector("#card-error").textContent = event.error ? event.error.message : "";
+            });
+            var form = document.getElementById("payment-form");
+                form.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    payWithCard(stripe, card, data.clientSecret);
+                });
+        });
+        var payWithCard = function(stripe, card, clientSecret) {
+            loading(true);
+            stripe
+                .confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: card
+                    }
+                })
+                .then(function(result) {
+                    if (result.error) {
+                        showError(result.error.message);
+                    } else {
+                        orderComplete(result.paymentIntent.id);
+                    }
+                });
+        };
+        var orderComplete = function(paymentIntentId) {
+            loading(false);
+            document
+            .querySelector(".result-message a")
+            .setAttribute(
+                "href",
+                "https://dashboard.stripe.com/test/payments/" + paymentIntentId
+            );
+            document.querySelector(".result-message").classList.remove("hidden");
+            document.querySelector("button").disabled = true;
+            window.location.href = `/v1/api/ordered?paymentId=${paymentIntentId}`
+        };
+        var showError = function(errorMsgText) {
+            loading(false);
+            var errorMsg = document.querySelector("#card-error");
+            errorMsg.textContent = errorMsgText;
+            setTimeout(function() {
+                errorMsg.textContent = "";
+            }, 4000);
+        };
+        var loading = function(isLoading) {
+            if (isLoading) {
+                document.querySelector("button").disabled = true;
+                document.querySelector("#spinner").classList.remove("hidden");
+                document.querySelector("#button-text").classList.add("hidden");
+            } else {
+                document.querySelector("button").disabled = false;
+                document.querySelector("#spinner").classList.add("hidden");
+                document.querySelector("#button-text").classList.remove("hidden");
+            }
+        };
+    </script>
+</html>
