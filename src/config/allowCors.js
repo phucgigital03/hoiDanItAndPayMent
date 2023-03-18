@@ -1,7 +1,9 @@
 const whitelist = [
   'http://localhost:3000', 
   'http://localhost:5002',
+  'https://paymentstripeandpaypal.onrender.com',
 ]
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || whitelist.indexOf(origin) !== -1) {
