@@ -99,7 +99,7 @@
             items: [{ id: "xl-tshirt" }]
         };
         document.querySelector("button").disabled = true;
-        fetch("/v1/api/create-payment-intent-stripe", {
+        fetch("https://paymentstripeandpaypal.onrender.com/v1/api/create-payment-intent-stripe", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
