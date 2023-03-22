@@ -5,7 +5,7 @@ const hostName = (req,res,next)=>{
     if(process.env.NODE_ENV === 'development'){
         res.locals.HOST_NAME = `${process.env.HOST_NAME}:${process.env.PORT}`
     }else if(process.env.NODE_ENV === 'production'){
-        res.locals.HOST_NAME = `abc`
+        res.locals.HOST_NAME = process.env.HOST_NAME_PRODUCT
     }
     next()
 }

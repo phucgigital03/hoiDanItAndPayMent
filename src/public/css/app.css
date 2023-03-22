@@ -150,3 +150,10 @@ button:disabled {
     width: 80vw;
   }
 }
+
+/* chat socketIo */
+
+.feature-chat {
+  padding-top: 10px;
+  margin-top: 46px;
+}

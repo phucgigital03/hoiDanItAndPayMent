@@ -4,10 +4,12 @@ const customerApiRouter = require('./customerApiRouter.js');
 const projectsApiRouter = require('./projectsApiRouter.js');
 const tasksApiRouter = require('./tasksApiRouter.js');
 const checkOutsApiRouter = require('./checkOutsApiRouter.js');
+const chatSocketIoApiRouter = require('./chatSocketIoRouter.js');
 
 const routes = (app) => {
     // web
     app.use('/',userRouter)
+    app.use('/chatSocketIo',chatSocketIoApiRouter)
 
     // v1/api/
     app.use('/v1/api/',userApiRouter)

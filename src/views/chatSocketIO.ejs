@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat socketIO</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+    <div class="joining-room">
+        <p class="name-room-join"></p>
+    </div>
+    <div class="form-register-user" style="margin-top: 20px; margin-left: 20px;">
+        <label for="name-userId">UserName: </label>
+        <input id="name-userId" class="name-user" type="text">
+        <button type="button" class="btn btn-primary btn-register-user">create User</button>
+        <p class="errMessage"></p>
+    </div>
+    <div class="form-register-room" style="margin-top: 20px; margin-left: 20px;">
+        <label for="room-userId">RoomName: </label>
+        <input id="room-userId" class="room-user" type="text">
+        <button type="button" class="btn btn-primary btn-register-room">create Room</button>
+        <p class="errMessage-room"></p>
+    </div>
+    <div class="feature-chat">
+        <div class="container">
+            <div class="row">
+              <div class="col-sm-4">
+                <h1>all Room</h1>
+                <ul class="list-room" style="list-style: none;">
+                    <!-- add rooms -->
+                </ul>
+              </div>
+              <div class="col-sm-4">
+                <h1>user online</h1>
+                <ul class="list-user" style="list-style: none;">
+                    <!-- add users -->
+                </ul>
+              </div>
+              <div class="col-sm-8">
+                
+                <div class="wrap-message" style="height: 50vh;">
+                    <ul class="list-message" style="list-style: none;">
+                        <!-- add message -->
+                    </ul>
+                </div>
+                
+                <div class="wrap-btn-send-data">
+                    <div class="wrap-icon">
+                        <!-- icon dang go chu -->
+                    </div>
+                    <input class="data-user" type="text">
+                    <button type="button" class="btn btn-primary btn-send-message-room">send</button>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</body>
+    <script src="https://cdn.socket.io/4.4.0/socket.io.min.js" integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script>
+        window.addEventListener("DOMContentLoaded", (event) => {
+            $('.form-register-user').show();
+            $('.feature-chat').hide();
+            $('.form-register-room').hide();
+            const socket = io("<%= HOST_NAME %>");
+
+            $('.btn-register-user').click(()=>{
+                socket.emit("client-send-userName",$("#name-userId").val())
+                $("#name-userId").val("")
+            })
+
+            socket.on("client-register-err",(errmessage)=>{
+                $('.errMessage').text(errmessage);
+            })
+            socket.on("client-register-suc",(sucmessage)=>{
+                socket.on("sever-send-listUser",(userOnlines)=>{
+                    $('.form-register-user').hide();
+                    $('.feature-chat').show();
+                    $('.form-register-room').show();
+                    const htmlUsers = userOnlines.map((user)=> `<li class="item-user-name">${user}</li>`).join('');
+                    $('.list-user').html(htmlUsers)
+                })
+                socket.on("server-send-message",(dataMessage)=>{
+                    $('.list-message').append(`<li>${dataMessage.name}: ${dataMessage.message}</li>`)
+                });
+                socket.on("sever-send-listRoom",(arrNameRoom=>{
+                    const htmlRooms = arrNameRoom.map((nameRoom)=> `<li class="item-room-name">${nameRoom}</li>`).join('');
+                    $('.list-room').html(htmlRooms)
+                }));
+                socket.on("send-list-room",(arrNameRoom)=>{
+                    console.log(arrNameRoom)
+                    const htmlRooms = arrNameRoom.map((nameRoom)=> `<li class="item-room-name">${nameRoom}</li>`).join('');
+                    $('.list-room').html(htmlRooms)
+                });
+            })
+
+            socket.on("another-user-forcusIn",()=>{
+                $('.wrap-icon').html(`<div>co nguoi dang go chu</div>`)
+            })
+
+            socket.on("another-user-forcusOut",()=>{
+                $('.wrap-icon').html('')
+            })
+
+            $('.btn-data-user').click(()=>{
+                socket.emit("client-send-message",$('.data-user').val())
+                $('.data-user').val("")
+            })
+
+            $('.data-user').focusin(()=>{
+                socket.emit("catch-event-focusIn")
+            })
+
+            $('.data-user').focusout(()=>{
+                socket.emit("catch-event-focusOut")
+            })
+
+            $('.btn-register-room').click(()=>{
+                socket.emit("create-room",$('#room-userId').val());
+                $('#room-userId').val("")
+            })
+
+            socket.on("join-room",(nameRoom=>{
+                $('.name-room-join').text(`ban dang o room: ${nameRoom}`);
+            }));
+
+            socket.on("create-room-suc",(nameRoom)=>{
+                $('.name-room-join').text(`ban dang o room: ${nameRoom}`)
+            });
+
+            socket.on("send-message-room-other-user",(dataMessage)=>{
+                $('.list-message').append(`<li>${dataMessage.name}: ${dataMessage.message}</li>`)
+            })
+
+            $('.btn-send-message-room').click(()=>{
+                socket.emit("send-message-room",$('.data-user').val())
+                $('.data-user').val("")
+            })
+        });
+    </script>
+</html>
