@@ -9,7 +9,7 @@ const connectMongoDb = async ()=>{
         dbName: process.env.DB_NAME,
     }
     try{
-        await mongoose.connect(process.env.DB_HOSTNAME,options);
+        await mongoose.connect(process.env.DB_HOSTNAME_ALTAS,options);
         console.log('connect successful')
     }catch(err){
         console.log(err)
