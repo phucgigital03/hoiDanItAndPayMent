@@ -5,7 +5,7 @@ class chatSocketIoController{
     //[get]: /
     async home(req,res,next){
         try{
-            res.status(200).render('chatSocketIo.ejs')
+            res.status(200).render('chatSocketIO.ejs')
         }catch(err){
             console.log(err)
             return res.status(500).json({
