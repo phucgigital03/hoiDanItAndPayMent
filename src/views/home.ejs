@@ -119,11 +119,9 @@
         const btnEditUser = $('.btn-edit-user')
         const btnSaveUser = $('.btn-save-user')
         const btnDestroyUser = $('.btn-delete-user')
-        
         btnDeleUser.click(function(){
             idUser = $(this).attr('id')
         })
-
         btnDestroyUser.click(function(){
             const callApiDeleUser = async ()=>{
                 try{
@@ -139,11 +137,9 @@
             }
             callApiDeleUser()
         })
-
         btnEditUser.click(function(){
             idUser = $(this).attr('id')
         })
-
         btnSaveUser.click(function(){
             const form = document.getElementById("form-edit-user");
             const formEditUserData = new FormData(form);

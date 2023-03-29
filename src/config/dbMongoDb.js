@@ -9,8 +9,8 @@ const connectMongoDb = async ()=>{
         dbName: process.env.DB_NAME,
     }
     try{
-        await mongoose.connect(process.env.DB_HOSTNAME_ALTAS,options);
-        console.log('connect successful')
+        await mongoose.connect(process.env.DB_HOSTNAME,options);
+        console.log('connect successful mongoDB')
     }catch(err){
         console.log(err)
         return 1;

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Blog</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/blog.css">
+</head>
+<body>
+  <div class="app-blog">
+    <div class="list-blog">
+      <h1>all blog you can choose one in many these</h1>
+      <ul class="list-blog-ul">
+        <%for (var blog of blogs){%>
+          <li id="<%= blog._id %>" class="list-blog-ul-li"><%= blog.title %></li>
+        <%}%>
+      </ul>
+    </div>
+    <div class="wrap-flex-blog-comment">
+      <div class="current-blog">
+        <h3 class="current-blog-title"></h3>
+        <p class="current-blog-description"></p>
+      </div>
+      <div class="container-blog">
+        <div id="comments">
+          <ul class="comments-blog-ul">
+            <!-- system comment -->
+          </ul>
+        </div>
+      </div>
+      <div class="create-comment-blog">
+        <form id="modal-body-form-create-comment">
+          <div class="form-group">
+            <label for="contentReply">Content comment</label>
+            <input style="width: 600px;" name="content" type="text" class="form-control input-post-comment" id="contentReply" aria-describedby="textHelp" placeholder="Enter text">
+          </div>
+          <button type="button" class="btn btn-primary post-comment-btn">Post comment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- modal reply comment -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title title-model-reply" id="exampleModalLabel"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="modal-body-form-reply-comment">
+            <div class="form-group">
+              <label for="contentReply">Content reply</label>
+              <input name="content" type="text" class="form-control" id="contentReply" aria-describedby="textHelp" placeholder="Enter text">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary reply-btn" data-dismiss="modal">Reply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+<script src="https://cdn.socket.io/4.4.0/socket.io.min.js" integrity="sha384-1fOn6VtTq3PWwfsOrk45LnYcGosJwzMHv+Xh/Jx5303FVOXzEnw0EpLv30mtjmlj" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.2.1/axios.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script>
+    window.addEventListener('DOMContentLoaded',()=>{
+        const socket = io("http://localhost:3000")
+        let idCommentReply;
+        let _event;
+        $('.wrap-flex-blog-comment').hide()
+        const callGetBlogs = async (id,type)=>{
+          try{
+            const oneBlogRes = await axios.get(`http://localhost:3000/v1/api/comment?id=${id}&type=${type}`)
+            return oneBlogRes.data
+          }catch(err){
+            console.log(err)
+          }
+        }
+        const callReplyAndPostComment = async (formData)=>{
+          try{
+            const commentReply = await axios.post("http://localhost:3000/v1/api/comment",formData,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            })
+            return commentReply.data
+          }catch(err){
+            console.log(err)
+          }
+        }
+        const appendComment = (event,childComments,type)=>{
+            const htmlComments = childComments.map((comment)=>{
+                return `
+                  <ul>
+                    <li>
+                      <div id="${comment._id}" class="comment">
+                        <p class="comment-content">${comment.content}</p>
+                        <button id="${comment._id}" class="reply-button" data-target="#exampleModal" data-toggle="modal">Reply</button>
+                        <button id="${comment._id}" class="load-comment-button">Load childComment</button>
+                        <button id="${comment._id}" class="hidden-comment-button">Hidden childComment</button>
+                        <div class="reply-form"></div>
+                      </div>
+                    </li>
+                  </ul>
+                `
+            }).join('')
+            if(type === 'load'){
+              $(event.target).closest('.comment').children("ul").remove()
+              $(event.target).closest('.comment').append(htmlComments)
+            }else if(type === 'reply'){
+              $(event.target).closest('.comment').append(htmlComments)
+            }
+        }
+        const renderComment = (commentIds,type)=>{
+          const htmlComments = commentIds.map((comment)=>{
+              return `
+                <li>
+                  <div id="${comment._id}" class="comment">
+                    <p class="comment-content">${comment.content}</p>
+                    <button id="${comment._id}" class="reply-button" data-target="#exampleModal" data-toggle="modal">Reply</button>
+                    <button id="${comment._id}" class="load-comment-button">Load childComment</button>
+                    <button id="${comment._id}" class="hidden-comment-button">Hidden childComment</button>
+                    <div class="reply-form"></div>
+                  </div>
+                </li>
+              `
+          }).join('')
+          if(type === 'render'){
+            $('.comments-blog-ul').html(htmlComments)
+          }else if(type === 'post'){
+            $('.comments-blog-ul').append(htmlComments)
+          }
+        }
+
+        $('.list-blog-ul-li').click(async function(){
+            const id = $(this).attr("id");
+            const oneBlog = await callGetBlogs(id,'parent');
+            if(oneBlog){
+              const { title,description,commentIds } = oneBlog.data[0]
+              $('.current-blog-title').text(title);
+              $('.current-blog-description').text(description);
+              renderComment(commentIds,'render');
+              $('.post-comment-btn').attr("id",id);
+              $('.wrap-flex-blog-comment').show()
+            }
+            const nameRoom = $(this).text();
+            socket.emit("join-blog",nameRoom);
+        })
+
+        $('.comments-blog-ul').click(async function(event){
+          if($(event.target).attr('class') === 'load-comment-button'){
+            const id = $(event.target).attr('id')
+            const childCommentRes = await callGetBlogs(id,'child');
+            const { childCommentIds: childComments } = childCommentRes.data[0]
+            appendComment(event,childComments,'load');
+          }
+          if($(event.target).attr('class') === 'reply-button'){
+              _event = event;
+              idCommentReply = $(event.target).attr('id')
+              const titleModel = $(event.target).closest('.comment').children(".comment-content").text()
+              $('.title-model-reply').text(`Reply comment: ${titleModel}`)
+          }
+          if($(event.target).attr('class') === 'hidden-comment-button'){
+              $(event.target).closest('.comment').children("ul").remove()
+          }
+        })
+
+        $('.reply-btn').click(async function(){
+            const formDataReply = Object.fromEntries(new FormData($('#modal-body-form-reply-comment')[0]))
+            formDataReply.userInfo = {
+              name: "phuc 1",
+              email: "p@gmail.com"
+            }
+            formDataReply.type =  "childComment"
+            formDataReply.parentId = idCommentReply
+            const { data: commentReply } = await callReplyAndPostComment(formDataReply)
+            socket.emit("reply-comment",idCommentReply,[commentReply]);
+            // appendComment(_event,[formDataReply],'reply')
+        })
+
+        $('.post-comment-btn').click(async function(){
+            const id = $(this).attr("id");
+            const formDataPostComment = Object.fromEntries(new FormData($('#modal-body-form-create-comment')[0]))
+            formDataPostComment.userInfo = {
+              name: "phuc 1",
+              email: "p@gmail.com"
+            }
+            formDataPostComment.type =  "empty"
+            formDataPostComment.parentId = id
+            const { data: commentPost } = await callReplyAndPostComment(formDataPostComment)
+            socket.emit("post-comment",[commentPost]);
+            $('.input-post-comment').val('')
+            // renderComment([commentPost],'post')
+        })
+
+        socket.on("render-post-comment",(commentPost)=>{
+          renderComment(commentPost,'post')
+        });
+
+        socket.on("render-reply-comment",(idCommentReply,commentReply)=>{
+            appendComment({target: $(`div#${idCommentReply}`)},commentReply,'reply')
+        })
+    })
+</script>
+</html>

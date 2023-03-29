@@ -1,0 +1,62 @@
+.container-blog{
+  padding: 40px;
+}
+/* style the comments section */
+#comments {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+/* style each comment */
+.comment {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+/* style the reply button */
+.hidden-comment-button,
+.load-comment-button,
+.reply-button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+/* style the reply form */
+.reply-form {
+  display: none;
+  margin-top: 10px;
+}
+/* show the reply form when the reply button is clicked */
+/* .comment:hover .reply-form {
+  display: block;
+} */
+/* style nested comments */
+.comment ul {
+  margin-left: 20px;
+  list-style: none;
+}
+/* style even nested comments differently */
+.comment ul li:nth-child(even) {
+  background-color: #f9f9f9;
+}
+/* app-blog */
+.app-blog {
+  display: flex;
+  justify-content: space-around;
+  width: 1400px;
+  margin: auto;
+}
+.list-blog {
+  flex-basis: 30%;
+  padding: 20px 10px;
+}
+.wrap-flex-blog-comment {
+  flex-basis: 70%;
+  padding-top: 28px;
+}
+.list-blog-ul-li{
+  width: 100px;
+  padding: 10px 6px;
+}

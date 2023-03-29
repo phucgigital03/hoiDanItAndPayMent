@@ -1,22 +1,18 @@
 const userRouter = require('./userRouter.js')
 const userApiRouter = require('./userApiRouter.js');
-const customerApiRouter = require('./customerApiRouter.js');
-const projectsApiRouter = require('./projectsApiRouter.js');
-const tasksApiRouter = require('./tasksApiRouter.js');
 const checkOutsApiRouter = require('./checkOutsApiRouter.js');
-const chatSocketIoApiRouter = require('./chatSocketIoRouter.js');
+const blogApiRouter = require('./blogApiRouter.js');
+const commentApiRouter = require('./commentApiRouter');
 
 const routes = (app) => {
     // web
     app.use('/',userRouter)
-    app.use('/chatSocketIo',chatSocketIoApiRouter)
 
     // v1/api/
     app.use('/v1/api/',userApiRouter)
-    app.use('/v1/api/',customerApiRouter)
-    app.use('/v1/api/',projectsApiRouter)
-    app.use('/v1/api/',tasksApiRouter)
     app.use('/v1/api/',checkOutsApiRouter)
+    app.use('/v1/api/',blogApiRouter)
+    app.use('/v1/api/',commentApiRouter)
 }
 
 module.exports = routes
