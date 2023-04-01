@@ -1,20 +1,10 @@
-const { client } = require('../config/connectRedis.js')
+const { client,clientSubscribe } = require('../config/connectRedis.js')
 
 class FeatureRedis{
-    async connectRedis(){
-        try{
-            client.connect(function(){
-                console.log("redis is connected")
-                return 1
-            });
-        }catch(err){
-            console.log(err)
-            return 0;
-        }
-    }
     async disConnectRedis(){
         try{
             await client.disconnect();
+            return 1;
         }catch(err){
             console.log(err)
             return 0;
@@ -60,6 +50,18 @@ class FeatureRedis{
         try{
             const result = await client.setnx(key,value);
             return result
+        }catch(err){
+            console.log(err)
+            return 0;
+        }
+    }
+    async psubscribeRedis(key,value){
+        try{
+            clientSubscribe.psubscribe('__keyevent@0__:expired',()=>{
+                clientSubscribe.on('pmessage',(pattern,channel,message)=>{
+                    console.log(message)
+                })
+            });
         }catch(err){
             console.log(err)
             return 0;

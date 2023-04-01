@@ -19,6 +19,18 @@ class blogController{
         }
     }
 
+    //[get]: /
+    async formCreateBlog(req,res,next){
+        try{
+            return res.status(200).render("formCreateBlog.ejs")
+        }catch(err){
+            console.log(err)
+            return res.status(500).json({
+                message: 'error server'
+            })
+        }
+    }
+
     //[post]: /
     async createBlog(req,res,next){
         try{

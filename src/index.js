@@ -11,7 +11,6 @@ const connectMongoDb = require('./config/dbMongoDb.js')
 const corsOptions = require('./config/allowCors.js');
 const hostName = require('./middlewares/hostNameMiddleWare.js');
 const commentSocketIo = require('./services/commentSocketIo.js');
-const { client } = require('./config/connectRedis.js')
 
 const port = process.env.PORT || 8080
 const hostname = process.env.HOST_NAME
@@ -34,6 +33,39 @@ routes(app);
 // test socketIo
 global._io = io;
 io.on("connection",commentSocketIo.connectSocketIo);
+
+//test redis
+// const featureRedis = require('./utils/featureRedis.js')
+// const testRedis = async()=>{
+//   try{
+//     await featureRedis.psubscribeRedis();
+//   }catch(err){
+//     console.log(err)
+//   }
+// }
+// testRedis();
+
+//test rabbitMQ
+// const featureRabbitMQ = require('./utils/featureRabbitMQ.js');
+// const sendRB = async()=>{
+//   try{
+//     await featureRabbitMQ.sendMessage({msg: 'hello1'})
+//     await featureRabbitMQ.sendMessage({msg: 'hello2'})
+//     await featureRabbitMQ.sendMessage({msg: 'hello3'})
+//   }catch(err){
+//     console.log(err)
+//   }
+// }
+// sendRB();
+
+// const receiveRB = async()=>{
+//   try{
+//     await featureRabbitMQ.receiveMessage()
+//   }catch(err){
+//     console.log(err)
+//   }
+// }
+// receiveRB();
 
 // handleConnectAndStartServer
 (async ()=>{
